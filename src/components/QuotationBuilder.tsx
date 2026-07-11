@@ -1577,7 +1577,7 @@ export default function QuotationBuilder({
                       Office: <span className="font-medium whitespace-nowrap">{businessId === "zainee" ? "Liberty Tower, 183/30-32, Jubilee Road" : "Jubilee Road, Chattogram, Bangladesh"}</span>
                     </p>
                     <p className="font-bold whitespace-nowrap">
-                      Helplines: <span className="font-medium font-mono whitespace-nowrap">{businessId === "zainee" ? "01971701761,01302701761" : "01819315746,01712900431"}</span>
+                      Helplines: <span className="font-medium font-mono whitespace-nowrap">{businessId === "zainee" ? "01971701761,01302701761" : "01971701761,01302701761"}</span>
                     </p>
                     <p className="font-bold whitespace-nowrap">
                       Official Email: <span className="font-medium whitespace-nowrap">{businessId === "zainee" ? "zainee.enterprise@gmail.com" : "comillatraders@gmail.com"}</span>
@@ -1589,7 +1589,7 @@ export default function QuotationBuilder({
                   
                   {/* Print contact information layout */}
                   <div className="text-center text-[8pt] text-slate-800 space-y-0.5 leading-tight sm:hidden print:hidden">
-                    <p>{businessId === "zainee" ? "Jubilee Road, Chittagong" : "Jubilee Road, Chattogram"} &bull; Hotlines: {businessId === "zainee" ?"01819315746"}</p>
+                    <p>{businessId === "zainee" ? "Jubilee Road, Chittagong" : "Jubilee Road, Chattogram"} &bull; Hotlines: {businessId === "zainee" ? "01971701761, 01302701761" : "01971701761, 01302701761"}</p>
                     <p>{businessId === "zainee" ? "zainee.enterprise@gmail.com" : "comillatraders@gmail.com"}</p>
                   </div>
                 </div>
