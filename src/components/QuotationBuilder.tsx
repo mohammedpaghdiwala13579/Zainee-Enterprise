@@ -1589,7 +1589,7 @@ export default function QuotationBuilder({
                   
                   {/* Print contact information layout */}
                   <div className="text-center text-[8pt] text-slate-800 space-y-0.5 leading-tight sm:hidden print:hidden">
-                    <p>{businessId === "zainee" ? "Jubilee Road, Chittagong" : "Jubilee Road, Chattogram"} &bull; Hotlines: {businessId === "zainee" ? "01712-900431" : "01819315746"}</p>
+                    <p>{businessId === "zainee" ? "Jubilee Road, Chittagong" : "Jubilee Road, Chattogram"} &bull; Hotlines: {businessId === "zainee" ?"01819315746"}</p>
                     <p>{businessId === "zainee" ? "zainee.enterprise@gmail.com" : "comillatraders@gmail.com"}</p>
                   </div>
                 </div>
