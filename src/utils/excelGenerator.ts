@@ -40,7 +40,7 @@ export const generateExcelWorkbook = async (
   poNumber?: string,
   vatPercent?: number,
   transportationFee?: number,
-  businessId: "comilla" | "zainee" = "comilla"
+  businessId: "comilla" | "zainee" = "zainee"
 ): Promise<ExcelJS.Workbook> => {
   const workbook = new ExcelJS.Workbook();
   const sheetName = docType === "challan" ? "Challan" : docType === "invoice" ? "Invoice" : "Quotation";

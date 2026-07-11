@@ -6,7 +6,17 @@ service cloud.firestore {
       allow read, write: if false;
     }
 
-    // Allow read/write access to the documents collection (anonymous/public)
+    // Allow read/write access to the Zainee collection (anonymous/public)
+    match /zainee_documents/{documentId} {
+      allow read, write: if true;
+    }
+
+    // Allow read/write access to the Comilla collection (anonymous/public)
+    match /comilla_documents/{documentId} {
+      allow read, write: if true;
+    }
+
+    // Allow read/write access to the legacy documents collection
     match /documents/{documentId} {
       allow read, write: if true;
     }

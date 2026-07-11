@@ -118,6 +118,8 @@ export default function QuotationBuilder({
   businessId: "comilla" | "zainee";
   setBusinessId: React.Dispatch<React.SetStateAction<"comilla" | "zainee">>;
 }) {
+  const targetCollection = businessId === "zainee" ? "zainee_documents" : "comilla_documents";
+
   const [docType, setDocType] = useState<"quotation" | "challan" | "invoice">("quotation");
   const [dateVal, setDateVal] = useState(() => {
     const today = new Date();
@@ -206,7 +208,7 @@ export default function QuotationBuilder({
 
   // Listen to Firestore documents
   useEffect(() => {
-    const q = query(collection(db, "documents"), orderBy("updatedAt", "desc"));
+    const q = query(collection(db, targetCollection), orderBy("updatedAt", "desc"));
     const unsubscribe = onSnapshot(q, (snapshot) => {
       const docs: SavedDocument[] = [];
       snapshot.forEach((doc) => {
@@ -246,16 +248,16 @@ export default function QuotationBuilder({
           poNumber: data.poNumber || "",
           rows: docRows,
           mergedRegions: docMergedRegions,
-          businessId: data.businessId || "comilla"
+          businessId: data.businessId || "zainee"
         });
       });
       setSavedDocs(docs);
     }, (error) => {
-      handleFirestoreError(error, OperationType.GET, "documents");
+      handleFirestoreError(error, OperationType.GET, targetCollection);
     });
 
     return () => unsubscribe();
-  }, []);
+  }, [targetCollection]);
 
   const generateUUID = () => {
     return 'doc-' + Math.random().toString(36).substring(2, 11) + '-' + Date.now();
@@ -320,7 +322,7 @@ export default function QuotationBuilder({
 
     setSaveStatus("saving");
     try {
-      await setDoc(doc(db, "documents", docId), docData);
+      await setDoc(doc(db, targetCollection, docId), docData);
       if (!currentDocId) {
         setCurrentDocId(docId);
       }
@@ -332,7 +334,7 @@ export default function QuotationBuilder({
       console.error("Error saving document:", e);
       setSaveStatus("error");
       setTimeout(() => setSaveStatus("idle"), 3000);
-      handleFirestoreError(e, OperationType.WRITE, `documents/${docId}`);
+      handleFirestoreError(e, OperationType.WRITE, `${targetCollection}/${docId}`);
     }
   };
 
@@ -388,7 +390,7 @@ export default function QuotationBuilder({
     if (doc.businessId) {
       setBusinessId(doc.businessId);
     } else {
-      setBusinessId("comilla");
+      setBusinessId("zainee");
     }
 
     if (typeof window !== "undefined") {
@@ -400,13 +402,13 @@ export default function QuotationBuilder({
     if (e) e.stopPropagation();
     if (window.confirm("Are you sure you want to delete this saved document from the online database?")) {
       try {
-        await deleteDoc(doc(db, "documents", id));
+        await deleteDoc(doc(db, targetCollection, id));
         if (currentDocId === id) {
           resetSheetFields();
         }
       } catch (e) {
         console.error("Error deleting document:", e);
-        handleFirestoreError(e, OperationType.DELETE, `documents/${id}`);
+        handleFirestoreError(e, OperationType.DELETE, `${targetCollection}/${id}`);
       }
     }
   };
@@ -423,10 +425,10 @@ export default function QuotationBuilder({
           name: newName.trim(),
           updatedAt: new Date().toISOString()
         };
-        await setDoc(doc(db, "documents", id), updatedData);
+        await setDoc(doc(db, targetCollection, id), updatedData);
       } catch (e) {
         console.error("Error renaming document:", e);
-        handleFirestoreError(e, OperationType.WRITE, `documents/${id}`);
+        handleFirestoreError(e, OperationType.WRITE, `${targetCollection}/${id}`);
       }
     }
   };
@@ -472,7 +474,7 @@ export default function QuotationBuilder({
         businessId: businessId
       };
 
-      await setDoc(doc(db, "documents", newId), docPayload);
+      await setDoc(doc(db, targetCollection, newId), docPayload);
       setCurrentDocId(newId);
       setSaveStatus("saved");
       setTimeout(() => setSaveStatus("idle"), 3000);
@@ -480,7 +482,7 @@ export default function QuotationBuilder({
       console.error("Error duplicating document:", err);
       setSaveStatus("error");
       setTimeout(() => setSaveStatus("idle"), 3000);
-      handleFirestoreError(err, OperationType.WRITE, `documents/${newId}`);
+      handleFirestoreError(err, OperationType.WRITE, `${targetCollection}/${newId}`);
     }
   };
 
@@ -552,7 +554,7 @@ export default function QuotationBuilder({
 
       setSaveStatus("saving");
       try {
-        await setDoc(doc(db, "documents", docId), docData);
+        await setDoc(doc(db, targetCollection, docId), docData);
         if (!currentDocId) {
           setCurrentDocId(docId);
         }
@@ -564,7 +566,7 @@ export default function QuotationBuilder({
         console.error("Auto-save failed:", e);
         setSaveStatus("error");
         setTimeout(() => setSaveStatus("idle"), 3000);
-        handleFirestoreError(e, OperationType.WRITE, `documents/${docId}`);
+        handleFirestoreError(e, OperationType.WRITE, `${targetCollection}/${docId}`);
       }
     }, 1500);
 

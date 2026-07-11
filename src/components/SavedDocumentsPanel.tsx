@@ -25,12 +25,16 @@ export default function SavedDocumentsPanel({
   loadSavedDoc,
   deleteSavedDoc,
   renameSavedDoc,
-  businessId = "comilla",
+  businessId = "zainee",
 }: SavedDocumentsPanelProps) {
   const [showDocHelp, setShowDocHelp] = useState(false);
 
   // Filter documents in client
   const filteredDocs = savedDocs.filter((doc) => {
+    // Hide Comilla Traders documents
+    if (doc.businessId === "comilla") {
+      return false;
+    }
     if (selectedTypeFilter !== "all" && doc.docType !== selectedTypeFilter) {
       return false;
     }
@@ -266,14 +270,7 @@ export default function SavedDocumentsPanel({
                               EDITING
                             </span>
                           )}
-                          <span className={`inline-flex items-center text-[9px] font-bold px-1.5 py-0.2 rounded-sm tracking-wide shrink-0 border ${
-                            doc.businessId === "zainee"
-                              ? "bg-emerald-50 border-emerald-200 text-emerald-800"
-                              : "bg-indigo-50 border-indigo-200 text-indigo-800"
-                          }`}>
-                            {doc.businessId === "zainee" ? "ZAINEE" : "COMILLA"}
-                          </span>
-                          <span className="truncate max-w-[150px] sm:max-w-[250px] block font-semibold text-slate-900" title={doc.name}>
+                          <span className="truncate max-w-[220px] sm:max-w-[320px] block font-semibold text-slate-900" title={doc.name}>
                             {doc.name}
                           </span>
                         </div>

@@ -9,7 +9,7 @@ export default function App() {
   const [showBanner, setShowBanner] = useState(false);
   const [showGuidance, setShowGuidance] = useState(false);
   const [platform, setPlatform] = useState<"ios" | "android" | "mac" | "windows" | "other">("other");
-  const [businessId, setBusinessId] = useState<"comilla" | "zainee">("comilla");
+  const [businessId, setBusinessId] = useState<"comilla" | "zainee">("zainee");
 
   useEffect(() => {
     // 1. Check if the application is already running in standalone/installed mode
@@ -156,65 +156,34 @@ export default function App() {
         <div className="flex items-center gap-3 w-full md:w-auto">
           <div className="h-10 w-10 rounded-lg border border-slate-200 overflow-hidden bg-white flex items-center justify-center shrink-0 p-0.5 shadow-sm">
             <img
-              src={businessId === "zainee" ? "https://i.ibb.co.com/gbvQz6CH/as.png" : "https://i.ibb.co.com/gFBkpt8B/Chat-GPT-Image-Apr-23-2026-01-10-13-PM.png"}
+              src="https://i.ibb.co.com/gbvQz6CH/as.png"
               alt="Business Logo"
               className="w-full h-full object-cover rounded"
             />
           </div>
           <div>
             <h1 className="text-sm font-bold tracking-tight text-slate-900 flex items-center gap-1.5 uppercase font-display">
-              {businessId === "zainee" ? "ZAINEE ENTERPRISE" : "COMILLA TRADERS"}
-              <span className={`text-[9px] font-semibold px-1.5 py-0.5 rounded border ${
-                businessId === "zainee" 
-                  ? "bg-emerald-50 text-emerald-700 border-emerald-200" 
-                  : "bg-indigo-50 text-indigo-700 border-indigo-200"
-              }`}>
+              ZAINEE ENTERPRISE
+              <span className="bg-emerald-50 text-emerald-700 border-emerald-200 text-[9px] font-semibold px-1.5 py-0.5 rounded border">
                 TERMINAL
               </span>
             </h1>
             <p className="text-[10px] text-slate-500 font-medium tracking-wide">
-              {businessId === "zainee" 
-                ? "Hardware, Tools, Machineries, Spare Parts Supplier Portal" 
-                : "Professional Ship Chandler Quotation & Delivery Challan Terminal"}
+              Hardware, Tools, Machineries, Spare Parts Supplier Portal
             </p>
           </div>
         </div>
 
-        {/* Company Terminal Switcher & Actions */}
-        <div className="flex flex-wrap items-center gap-3 shrink-0 w-full md:w-auto justify-between md:justify-end">
-          <div className="flex items-center bg-slate-100 p-1 rounded-xl border border-slate-200 gap-1.5 shadow-inner">
-            <button
-              onClick={() => setBusinessId("comilla")}
-              className={`px-3 py-1.5 text-xs font-bold rounded-lg transition-all flex items-center gap-1.5 cursor-pointer ${
-                businessId === "comilla"
-                  ? "bg-indigo-600 text-white shadow-md shadow-indigo-200/50"
-                  : "text-slate-600 hover:text-slate-950 hover:bg-white/60"
-              }`}
-            >
-              <span className={`w-2 h-2 rounded-full ${businessId === "comilla" ? "bg-white animate-pulse" : "bg-indigo-600"}`}></span>
-              Comilla Traders
-            </button>
-            <button
-              onClick={() => setBusinessId("zainee")}
-              className={`px-3 py-1.5 text-xs font-bold rounded-lg transition-all flex items-center gap-1.5 cursor-pointer ${
-                businessId === "zainee"
-                  ? "bg-slate-900 text-white shadow-md shadow-slate-900/30"
-                  : "text-slate-600 hover:text-slate-950 hover:bg-white/60"
-              }`}
-            >
-              <span className={`w-2 h-2 rounded-full ${businessId === "zainee" ? "bg-emerald-400 animate-pulse" : "bg-slate-800"}`}></span>
-              Zainee Enterprise
-            </button>
-          </div>
-
+        {/* Company Actions */}
+        <div className="flex flex-wrap items-center gap-3 shrink-0 w-full md:w-auto justify-end">
           {!isStandalone && (
             <div className="flex items-center">
               <button
                 id="btn-header-install"
                 onClick={handleInstallClick}
-                className="bg-indigo-50 hover:bg-indigo-100 text-indigo-700 hover:text-indigo-800 border border-indigo-200 text-xs font-bold px-3 py-1.5 rounded-lg flex items-center gap-1.5 transition-all shadow-sm cursor-pointer"
+                className="bg-emerald-50 hover:bg-emerald-100 text-emerald-700 hover:text-emerald-800 border border-emerald-200 text-xs font-bold px-3 py-1.5 rounded-lg flex items-center gap-1.5 transition-all shadow-sm cursor-pointer"
               >
-                <Download className="h-3.5 w-3.5 text-indigo-600 animate-bounce" />
+                <Download className="h-3.5 w-3.5 text-emerald-600 animate-bounce" />
                 <span>Install App</span>
               </button>
             </div>
@@ -235,7 +204,7 @@ export default function App() {
             </button>
 
             <div className="flex items-center gap-3 mb-4">
-              <div className="h-10 w-10 rounded-full bg-indigo-50 flex items-center justify-center text-indigo-600 shrink-0">
+              <div className="h-10 w-10 rounded-full bg-emerald-50 flex items-center justify-center text-emerald-600 shrink-0">
                 <Info className="h-5 w-5" />
               </div>
               <div>
@@ -247,17 +216,17 @@ export default function App() {
             <div className="space-y-4 my-4">
               {/* iOS Safari Guidance */}
               {platform === "ios" ? (
-                <div className="bg-indigo-50/55 p-3.5 rounded-lg border border-indigo-100 text-xs space-y-2.5">
-                  <p className="font-semibold text-indigo-950 flex items-center gap-1.5">
-                    <Smartphone className="h-4 w-4 text-indigo-600" />
+                <div className="bg-emerald-50/55 p-3.5 rounded-lg border border-emerald-100 text-xs space-y-2.5">
+                  <p className="font-semibold text-emerald-950 flex items-center gap-1.5">
+                    <Smartphone className="h-4 w-4 text-emerald-600" />
                     For iPhone &amp; iPad (Safari):
                   </p>
                   <ol className="list-decimal pl-4 space-y-2 text-slate-700">
                     <li>
-                      Tap the <strong className="text-slate-900">Share</strong> button ( <Share2 className="h-3 w-3 inline-block text-indigo-600" /> icon) at the bottom or top of Safari.
+                      Tap the <strong className="text-slate-900">Share</strong> button ( <Share2 className="h-3 w-3 inline-block text-emerald-600" /> icon) at the bottom or top of Safari.
                     </li>
                     <li>
-                      Scroll down and select <strong className="text-slate-900">Add to Home Screen</strong> ( <PlusSquare className="h-3 w-3 inline-block text-indigo-600" /> icon).
+                      Scroll down and select <strong className="text-slate-900">Add to Home Screen</strong> ( <PlusSquare className="h-3 w-3 inline-block text-emerald-600" /> icon).
                     </li>
                     <li>
                       Tap <strong className="text-slate-900">Add</strong> in the top-right corner.
@@ -267,9 +236,9 @@ export default function App() {
                 </div>
               ) : platform === "mac" ? (
                 /* macOS Safari Guidance */
-                <div className="bg-indigo-50/55 p-3.5 rounded-lg border border-indigo-100 text-xs space-y-2.5">
-                  <p className="font-semibold text-indigo-950 flex items-center gap-1.5">
-                    <Laptop className="h-4 w-4 text-indigo-600" />
+                <div className="bg-emerald-50/55 p-3.5 rounded-lg border border-emerald-100 text-xs space-y-2.5">
+                  <p className="font-semibold text-emerald-950 flex items-center gap-1.5">
+                    <Laptop className="h-4 w-4 text-emerald-600" />
                     For macOS (Safari):
                   </p>
                   <ol className="list-decimal pl-4 space-y-2 text-slate-700">
@@ -283,13 +252,13 @@ export default function App() {
                       Confirm the name and click <strong className="text-slate-900">Add</strong>.
                     </li>
                   </ol>
-                  <p className="text-[10px] text-slate-500 italic mt-1">This will place a beautiful {businessId === "zainee" ? "Zainee Enterprise" : "Comilla Traders"} icon right in your Mac Dock!</p>
+                  <p className="text-[10px] text-slate-500 italic mt-1">This will place a beautiful Zainee Enterprise icon right in your Mac Dock!</p>
                 </div>
               ) : (
                 /* PC / Other Browsers manual fallback instruction */
-                <div className="bg-indigo-50/55 p-3.5 rounded-lg border border-indigo-100 text-xs space-y-2.5">
-                  <p className="font-semibold text-indigo-950 flex items-center gap-1.5">
-                    <Monitor className="h-4 w-4 text-indigo-600" />
+                <div className="bg-emerald-50/55 p-3.5 rounded-lg border border-emerald-100 text-xs space-y-2.5">
+                  <p className="font-semibold text-emerald-950 flex items-center gap-1.5">
+                    <Monitor className="h-4 w-4 text-emerald-600" />
                     Standard Browser Installation:
                   </p>
                   <ol className="list-decimal pl-4 space-y-2 text-slate-700">
@@ -356,7 +325,7 @@ export default function App() {
           </div>
         </div>
         <div className="text-[10px] text-slate-400 uppercase tracking-wider text-center md:text-right font-semibold">
-          &copy; {new Date().getFullYear()} {businessId === "zainee" ? "Zainee Enterprise" : "Comilla Traders"} &bull; {businessId === "zainee" ? "Hardware & Supplier Portal" : "Ship Chandler Portal"} &bull; EnterprisePro Engine v4.2
+          &copy; {new Date().getFullYear()} Zainee Enterprise &bull; Hardware &amp; Supplier Portal &bull; EnterprisePro Engine v4.2
         </div>
       </footer>
     </div>
