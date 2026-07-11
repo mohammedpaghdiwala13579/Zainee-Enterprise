@@ -1,0 +1,338 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600;700&family=Space+Grotesk:wght@400;500;600;700;800&display=swap');
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, monospace;
+  --font-display: "Space Grotesk", sans-serif;
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 9999px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
+
+/* Hide webkit/spinner buttons for number fields */
+input[type="number"]::-webkit-outer-spin-button,
+input[type="number"]::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+input[type="number"] {
+  -moz-appearance: textfield;
+}
+
+/* Print Styling Configuration */
+@media print {
+  /* Set standard A4 page size and remove default browser headers/footers by setting margin to 0 */
+  @page {
+    size: A4 portrait;
+    margin: 0;
+  }
+
+  html, body {
+    background-color: #ffffff !important;
+    color: #000000 !important;
+    font-size: 8.5pt !important;
+    margin: 0 !important;
+    padding: 6mm 8mm 6mm 8mm !important; /* Restore standard printed page margins inside the sheet */
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  /* Ensure parent containers don't have flex, grid, transforms, transitions, or animations in print */
+  #root,
+  .min-h-screen,
+  main,
+  .animate-in {
+    display: block !important;
+    width: 100% !important;
+    height: auto !important;
+    min-height: 0 !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    position: static !important;
+    transform: none !important;
+    filter: none !important;
+    animation: none !important;
+    transition: none !important;
+  }
+
+  /* When printing the quotation/challan, hide non-printing elements */
+  .no-print,
+  .excel-editor-container,
+  .top-toolbar,
+  .saved-docs-panel,
+  header.no-print,
+  footer {
+    display: none !important;
+  }
+
+  .quotation-container {
+    background: transparent !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    width: 100% !important;
+    min-height: 0 !important;
+    display: block !important;
+    overflow: visible !important;
+  }
+
+  .sheet {
+    box-shadow: none !important;
+    border: none !important;
+    outline: none !important;
+    padding: 0 !important; /* Rely on @page margin to prevent double padding */
+    width: 100% !important;
+    max-width: 100% !important;
+    min-height: 0 !important;
+    margin: 0 auto !important;
+    background-color: #ffffff !important;
+    position: static !important; /* Crucial for repeating table headers in Chrome */
+    overflow: visible !important;
+    page-break-after: auto !important;
+    page-break-inside: auto !important;
+  }
+
+  /* Centered repeating watermark on every page in print */
+  .watermark-container {
+    position: fixed !important;
+    top: 50% !important;
+    left: 50% !important;
+    transform: translate(-50%, -50%) !important;
+    width: 70% !important;
+    height: auto !important;
+    max-width: 500px !important;
+    z-index: -1 !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    opacity: 1 !important;
+    pointer-events: none !important;
+  }
+
+  .watermark-container img {
+    width: 100% !important;
+    max-width: 500px !important;
+    opacity: 0.045 !important;
+  }
+
+  /* Print optimizations for Comilla Traders letterhead and metadata boxes */
+  .business-header {
+    display: block !important;
+    width: 100% !important;
+    border-bottom-width: 1.5px !important;
+    border-bottom-color: #000000 !important;
+    padding-bottom: 3px !important;
+    margin-bottom: 4px !important;
+    clear: both !important;
+  }
+
+  .business-header > div:first-child {
+    display: inline-block !important;
+    width: 65% !important;
+    vertical-align: middle !important;
+    text-align: left !important;
+  }
+
+  .business-header .contact-details {
+    display: inline-block !important;
+    width: 34% !important;
+    vertical-align: middle !important;
+    text-align: right !important;
+  }
+
+  .logo-container {
+    height: 60px !important;
+    width: 60px !important;
+    display: inline-block !important;
+    vertical-align: middle !important;
+    margin-right: 12px !important;
+  }
+
+  .logo-container + div {
+    display: inline-block !important;
+    vertical-align: middle !important;
+    width: calc(100% - 76px) !important;
+  }
+
+  .doc-title {
+    margin-top: 1px !important;
+    margin-bottom: 2px !important;
+    font-size: 11pt !important;
+    letter-spacing: 6px !important;
+    text-align: center !important;
+    clear: both !important;
+  }
+
+  .meta-grid {
+    display: grid !important;
+    grid-template-columns: 1fr 1fr !important;
+    gap: 4px !important;
+    width: 100% !important;
+    margin-bottom: 2px !important;
+    clear: both !important;
+  }
+
+  .meta-grid .meta-box {
+    display: block !important;
+    width: 100% !important;
+    box-sizing: border-box !important;
+    padding: 3px 4px !important;
+    border: 1px solid #000000 !important;
+    margin: 0 !important;
+  }
+
+  .meta-grid .meta-box.grid-cols-2 {
+    display: grid !important;
+    grid-template-columns: 1fr 1fr !important;
+    gap: 6px !important;
+  }
+
+  .meta-grid .meta-box.grid-cols-3 {
+    display: grid !important;
+    grid-template-columns: 1fr 1fr 1fr !important;
+    gap: 6px !important;
+  }
+
+  .meta-box .meta-inner-field {
+    display: block !important;
+    width: 100% !important;
+    margin: 0 !important;
+    box-sizing: border-box !important;
+  }
+
+  .meta-box .meta-inner-field.col-span-2 {
+    grid-column: span 2 / span 2 !important;
+    width: 100% !important;
+    display: block !important;
+  }
+
+  /* Force outer layout table to behave as display: table and repeat thead on every page */
+  table.print-outer-layout-table {
+    display: table !important;
+    width: 100% !important;
+    border-collapse: collapse !important;
+    border: none !important;
+    position: static !important;
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+
+  table.print-outer-layout-table > thead {
+    display: table-header-group !important;
+    position: static !important;
+  }
+
+  table.print-outer-layout-table > tbody {
+    display: table-row-group !important;
+    position: static !important;
+  }
+
+  table.print-outer-layout-table > thead > tr {
+    position: static !important;
+    page-break-inside: avoid !important;
+    page-break-after: avoid !important;
+  }
+
+  table.print-outer-layout-table > thead > tr > td {
+    position: static !important;
+    border: none !important;
+    padding: 0 !important;
+    margin: 0 !important;
+  }
+
+  /* Table styling for perfect alignments and borders */
+  .main-table {
+    width: 100% !important;
+    border-collapse: collapse !important;
+    border: 1.5px solid #000000 !important;
+    table-layout: fixed !important;
+  }
+
+  .main-table th, 
+  .main-table td {
+    border: 1px solid #000000 !important;
+    padding: 2.5px 5px !important; /* ultra-compact padding */
+    word-wrap: break-word !important;
+    overflow-wrap: break-word !important;
+  }
+
+  .main-table tr {
+    page-break-inside: avoid !important;
+  }
+
+  /* Ensure scroll wrappers do not have negative margins or overflow when printing */
+  .sheet .overflow-x-auto {
+    overflow: visible !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    width: 100% !important;
+  }
+
+  /* Ensure stamp and signature section don't break across pages */
+  .closing-wrap {
+    page-break-inside: avoid !important;
+  }
+
+  .sig-section {
+    page-break-inside: avoid !important;
+    margin-top: 16px !important; /* tighter vertical gap */
+  }
+
+  /* Force background colors and image watermarks to show */
+  * {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+}
+
+/* PDF Generation temporary styling overrides */
+.is-generating-pdf .no-print,
+.is-generating-pdf .excel-editor-container,
+.is-generating-pdf .top-toolbar,
+.is-generating-pdf .saved-docs-panel,
+.is-generating-pdf footer,
+.is-generating-pdf header {
+  display: none !important;
+}
+
+.is-generating-pdf .print\:hidden {
+  display: none !important;
+}
+
+.is-generating-pdf .hidden.print\:block {
+  display: block !important;
+}
+
+.is-generating-pdf textarea.no-print,
+.is-generating-pdf input.no-print {
+  display: none !important;
+}
+
+.is-generating-pdf .sheet {
+  box-shadow: none !important;
+  border: none !important;
+  margin: 0 !important;
+  padding: 12mm !important;
+  width: 210mm !important;
+  min-height: 297mm !important;
+  background-color: #ffffff !important;
+}
+
+.is-generating-pdf .quotation-container {
+  background-color: #ffffff !important;
+  padding: 0 !important;
+  margin: 0 !important;
+}
