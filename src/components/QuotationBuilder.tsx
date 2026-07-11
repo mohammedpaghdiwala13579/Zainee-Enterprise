@@ -1574,7 +1574,7 @@ export default function QuotationBuilder({
 
                   <div className="contact-details text-right text-[7.5pt] text-slate-800 space-y-0.5 leading-tight sm:block hidden print:block">
                     <p className="font-bold whitespace-nowrap">
-                      Office: <span className="font-medium whitespace-nowrap">{businessId === "zainee" ? "Liberty Tower, 183/30-32, Jubilee Road, Chittagong, Bangladesh" : "Jubilee Road, Chattogram, Bangladesh"}</span>
+                      Office: <span className="font-medium whitespace-nowrap">{businessId === "zainee" ? "Liberty Tower, 183/30-32, Jubilee Road" : "Jubilee Road, Chattogram, Bangladesh"}</span>
                     </p>
                     <p className="font-bold whitespace-nowrap">
                       Helplines: <span className="font-medium font-mono whitespace-nowrap">{businessId === "zainee" ? "01971701761,01712900431" : "01819315746,01712900431"}</span>
