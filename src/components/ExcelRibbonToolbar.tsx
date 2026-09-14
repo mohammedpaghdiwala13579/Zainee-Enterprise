@@ -8,8 +8,7 @@ import {
   Undo2,
   Redo2,
   Upload,
-  HardDriveDownload,
-  FileSpreadsheet
+  HardDriveDownload
 } from "lucide-react";
 import { CellFormat, CellBorders } from "../types";
 import { applyInlineFormatting } from "../utils/textFormatter";
@@ -104,7 +103,6 @@ export interface ExcelRibbonToolbarProps {
   onSaveFileToDevice?: () => void;
   onOpenFileFromDevice?: () => void;
   saveStatus: "idle" | "saving" | "saved" | "error";
-  onOpenGoogleSheetsModal?: () => void;
 
   // Actions
   onOpenExcelModal: () => void;
@@ -150,7 +148,6 @@ export default function ExcelRibbonToolbar({
   onSaveFileToDevice,
   onOpenFileFromDevice,
   saveStatus,
-  onOpenGoogleSheetsModal,
   onOpenExcelModal,
   onPrint,
   onDownloadPDF,
@@ -367,20 +364,6 @@ export default function ExcelRibbonToolbar({
             >
               <HardDriveDownload className="h-3 w-3 text-blue-700" />
               <span className="hidden sm:inline">Save File</span>
-            </button>
-          )}
-
-          {/* Google Sheets Integration */}
-          {onOpenGoogleSheetsModal && (
-            <button
-              type="button"
-              id="btn-toolbar-google-sheets"
-              onClick={onOpenGoogleSheetsModal}
-              className="h-7 px-2.5 bg-emerald-50 hover:bg-emerald-100 text-emerald-800 hover:text-emerald-900 rounded-md border border-emerald-300 shadow-2xs transition-colors cursor-pointer flex items-center gap-1.5 text-xs font-semibold"
-              title="Save & Sync document directly to Google Sheets"
-            >
-              <FileSpreadsheet className="h-3.5 w-3.5 text-emerald-700" />
-              <span className="hidden sm:inline">Google Sheets</span>
             </button>
           )}
 
