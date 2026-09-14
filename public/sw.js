@@ -31,12 +31,7 @@ self.addEventListener('fetch', (event) => {
   if (event.request.method !== 'GET') return;
   
   const url = new URL(event.request.url);
-  if (
-    url.pathname.startsWith('/api/') ||
-    url.origin.includes('firestore.googleapis.com') ||
-    url.origin.includes('identitytoolkit.googleapis.com') ||
-    url.origin.includes('firebase')
-  ) {
+  if (url.pathname.startsWith('/api/')) {
     return;
   }
 

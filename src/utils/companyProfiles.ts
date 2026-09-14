@@ -15,7 +15,6 @@ export const COMPANY_PROFILES: Record<CompanyId, CompanyProfile> = {
     stampUrl: undefined,
     watermarkUrl: "https://i.ibb.co.com/V8VJdXK/123.png",
     signatureForLabel: "For Zainee Enterprise",
-    firebaseCollection: "zainee_documents",
     idPrefix: "ze-doc-",
   },
 };

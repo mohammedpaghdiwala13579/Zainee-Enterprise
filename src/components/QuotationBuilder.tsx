@@ -1,7 +1,14 @@
 import React, { useState, useEffect, useRef } from "react";
-import { Download, Printer, Calendar, Save, Trash2, Plus, Minus, Check, RefreshCw, Copy, X, FileSpreadsheet, Layers, ListPlus, ArrowDownToLine, CheckCheck, Scissors, WrapText, Ship, Percent, FolderOpen, FileEdit, Building2, ArrowLeftRight } from "lucide-react";
-import { db } from "../lib/firebase";
-import { collection, doc, setDoc, deleteDoc, onSnapshot, query, orderBy } from "firebase/firestore";
+import { Download, Printer, Calendar, Save, Trash2, Plus, Minus, Check, RefreshCw, Copy, X, FileSpreadsheet, Layers, ListPlus, ArrowDownToLine, CheckCheck, Scissors, WrapText, Ship, Percent, FolderOpen, FileEdit, Building2, ArrowLeftRight, Upload, HardDriveDownload } from "lucide-react";
+import { 
+  saveDocumentLocally, 
+  deleteDocumentLocally, 
+  renameDocumentLocally, 
+  subscribeToLocalDocuments, 
+  downloadDocumentToDevice, 
+  readDocumentFileFromDevice,
+  exportAllDocumentsBackupToDevice
+} from "../lib/localDocumentStorage";
 import { numberToWords } from "../utils/numberToWords";
 import { parseClipboardData, parseTSV, cleanCellText } from "../utils/tsvParser";
 import { QuotationRow, MergedRegion, SavedDocument, CellFormat, CellFormatMap, CellBorders, CompanyId, CompanyProfile } from "../types";
@@ -18,39 +25,6 @@ import { generateExcelDocument } from "../utils/excelGenerator";
 // Lazy-loaded secondary components for instant initial app startup
 const SavedDocumentsPanel = React.lazy(() => import("./SavedDocumentsPanel"));
 const ExcelPasteModal = React.lazy(() => import("./ExcelPasteModal"));
-
-enum OperationType {
-  CREATE = 'create',
-  UPDATE = 'update',
-  DELETE = 'delete',
-  LIST = 'list',
-  GET = 'get',
-  WRITE = 'write',
-}
-
-interface FirestoreErrorInfo {
-  error: string;
-  operationType: OperationType;
-  path: string | null;
-  authInfo: {
-    userId?: string | null;
-    email?: string | null;
-  }
-}
-
-function handleFirestoreError(error: unknown, operationType: OperationType, path: string | null) {
-  const errInfo: FirestoreErrorInfo = {
-    error: error instanceof Error ? error.message : String(error),
-    authInfo: {
-      userId: null,
-      email: null
-    },
-    operationType,
-    path
-  };
-  console.error('Firestore Error: ', JSON.stringify(errInfo));
-  throw new Error(JSON.stringify(errInfo));
-}
 
 // Translate OKLCH colors to standard sRGB for canvas compatibility (used for html2pdf rendering)
 function oklchToRgb(l: number, c: number, h: number): [number, number, number] {
@@ -351,9 +325,9 @@ export default function QuotationBuilder() {
   const [customRowCountInput, setCustomRowCountInput] = useState<string>("10");
   const [customSubtractCountInput, setCustomSubtractCountInput] = useState<string>("10");
   const [targetTotalRowCountInput, setTargetTotalRowCountInput] = useState<string>("");
-  const [toastMessage, setToastMessage] = useState<{ text: string; type?: "info" | "success" } | null>(null);
+  const [toastMessage, setToastMessage] = useState<{ text: string; type?: "info" | "success" | "error" } | null>(null);
 
-  const showToast = (text: string, type: "info" | "success" = "success") => {
+  const showToast = (text: string, type: "info" | "success" | "error" = "success") => {
     setToastMessage({ text, type });
     setTimeout(() => {
       setToastMessage(null);
@@ -588,75 +562,13 @@ export default function QuotationBuilder() {
     setDateVal(`${dd}/${mm}/${yyyy}`);
   };
 
-  // Listen to Firestore documents from "zainee_documents" (Zainee Enterprise)
+  // Subscribe to documents stored locally on this device
   useEffect(() => {
-    const parseDocSnapshot = (docSnap: any): SavedDocument => {
-      const data = docSnap.data();
-      const docRows = (data.rows || []).map((r: any) => ({
-        sl: Number(r.sl) || 0,
-        desc: String(r.desc ?? ""),
-        qty: String(r.qty ?? ""),
-        unit: String(r.unit ?? ""),
-        price: String(r.price ?? ""),
-        amount: Number(r.amount) || 0,
-      }));
-      
-      const docMergedRegions: MergedRegion[] = Array.isArray(data.mergedRegions)
-        ? data.mergedRegions.map((m: any) => ({
-            id: String(m.id ?? `region-${Math.random().toString(36).substring(2, 9)}`),
-            startRow: Number(m.startRow) || 0,
-            endRow: Number(m.endRow) || 0,
-            startCol: Number(m.startCol) ?? 0,
-            endCol: Number(m.endCol) ?? 0,
-          }))
-        : [];
-
-      return {
-        id: docSnap.id,
-        companyId: "zainee",
-        companyName: data.companyName || COMPANY_PROFILES.zainee.name,
-        name: data.name || "",
-        createdAt: data.createdAt || "",
-        updatedAt: data.updatedAt || "",
-        docType: data.docType || "quotation",
-        dateVal: data.dateVal || "",
-        messers: data.messers || "",
-        address: data.address || "",
-        vesselName: data.vesselName || "",
-        portBerth: data.portBerth || "",
-        currency: (data.currency === "USD" || !data.currency) ? "Taka" : data.currency,
-        discountPercent: data.discountPercent || 0,
-        includeDiscount: data.includeDiscount !== undefined ? Boolean(data.includeDiscount) : ((data.discountValue && data.discountValue > 0) || (data.discountPercent && data.discountPercent > 0)),
-        discountType: data.discountType || "percentage",
-        discountValue: data.discountValue !== undefined ? data.discountValue : (data.discountPercent || 0),
-        challanNo: data.challanNo || "",
-        requisitionNo: data.requisitionNo || "",
-        invoiceNo: data.invoiceNo || "",
-        poNumber: data.poNumber || "",
-        quotationNo: data.quotationNo || "",
-        includeInvoiceNo: data.includeInvoiceNo !== undefined ? Boolean(data.includeInvoiceNo) : true,
-        includeChallanNo: data.includeChallanNo !== undefined ? Boolean(data.includeChallanNo) : true,
-        includeQuotationNo: data.includeQuotationNo !== undefined ? Boolean(data.includeQuotationNo) : true,
-        includeRequisitionNo: data.includeRequisitionNo !== undefined ? Boolean(data.includeRequisitionNo) : true,
-        includePoNumber: data.includePoNumber !== undefined ? Boolean(data.includePoNumber) : true,
-        rows: docRows,
-        mergedRegions: docMergedRegions,
-        cellFormats: (data.cellFormats as CellFormatMap) || {},
-        vatPercent: data.vatPercent,
-        transportationFee: data.transportationFee
-      };
-    };
-
-    const qZainee = query(collection(db, "zainee_documents"), orderBy("updatedAt", "desc"));
-    const unsubZainee = onSnapshot(qZainee, (snapshot) => {
-      const zaineeDocs = snapshot.docs.map(d => parseDocSnapshot(d));
-      setSavedDocs(zaineeDocs);
-    }, (error) => {
-      console.warn("zainee_documents listener notice:", error);
+    const unsubscribe = subscribeToLocalDocuments((docs) => {
+      setSavedDocs(docs);
     });
-
     return () => {
-      unsubZainee();
+      unsubscribe();
     };
   }, []);
 
@@ -664,12 +576,7 @@ export default function QuotationBuilder() {
     return "ze-doc-" + Math.random().toString(36).substring(2, 11) + '-' + Date.now();
   };
 
-  const saveCurrentDocToApp = async (customName?: string) => {
-    if (autoSaveTimerRef.current) {
-      clearTimeout(autoSaveTimerRef.current);
-      autoSaveTimerRef.current = null;
-    }
-
+  const constructCurrentDocData = (customName?: string): { docData: SavedDocument; docId: string } => {
     const now = new Date().toISOString();
     let docIdentifier = "";
     if (docType === "challan" && challanNo) {
@@ -682,9 +589,6 @@ export default function QuotationBuilder() {
     const defaultName = `${docTypeLabel}${docIdentifier} - ${messers || "Unnamed Client"} (${dateVal})`;
     const nameToUse = customName || savedDocs.find(d => d.id === currentDocId)?.name || defaultName;
 
-    // Save to zainee_documents
-    const targetCollection = "zainee_documents";
-    
     // Ensure the document ID strictly belongs to Zainee Enterprise
     const isValidIdForCompany = currentDocId && currentDocId.startsWith("ze-");
     const docId = isValidIdForCompany ? currentDocId : generateUUID("zainee");
@@ -743,9 +647,20 @@ export default function QuotationBuilder() {
       transportationFee: parseFloat(transportationFee) || 0
     };
 
+    return { docData, docId };
+  };
+
+  const saveCurrentDocToApp = async (customName?: string) => {
+    if (autoSaveTimerRef.current) {
+      clearTimeout(autoSaveTimerRef.current);
+      autoSaveTimerRef.current = null;
+    }
+
+    const { docData, docId } = constructCurrentDocData(customName);
+
     setSaveStatus("saving");
     try {
-      await setDoc(doc(db, targetCollection, docId), docData);
+      saveDocumentLocally(docData);
       if (currentDocId !== docId) {
         setCurrentDocId(docId);
       }
@@ -753,12 +668,49 @@ export default function QuotationBuilder() {
       setLastSavedTime(timeStr);
       setSaveStatus("saved");
       setTimeout(() => setSaveStatus("idle"), 3000);
-      showToast("Saved to Zainee Enterprise records", "success");
-    } catch (e) {
-      console.error("Error saving document:", e);
+      showToast("Saved locally to your device", "success");
+    } catch (e: any) {
+      console.error("Error saving document locally:", e);
       setSaveStatus("error");
       setTimeout(() => setSaveStatus("idle"), 3000);
-      handleFirestoreError(e, OperationType.WRITE, `${targetCollection}/${docId}`);
+      showToast(e?.message || "Failed to save document locally", "error");
+    }
+  };
+
+  const saveDocToFileOnDevice = (docToSave?: SavedDocument) => {
+    try {
+      const targetDoc = docToSave || constructCurrentDocData().docData;
+      saveDocumentLocally(targetDoc);
+      if (!docToSave && currentDocId !== targetDoc.id) {
+        setCurrentDocId(targetDoc.id);
+      }
+      downloadDocumentToDevice(targetDoc);
+      showToast(`Saved to device: ${targetDoc.name}.zainee`, "success");
+    } catch (err: any) {
+      console.error("Error saving file to device:", err);
+      showToast(err?.message || "Could not save file to device", "error");
+    }
+  };
+
+  const hiddenFileInputRef = useRef<HTMLInputElement>(null);
+
+  const triggerOpenDocFile = () => {
+    if (hiddenFileInputRef.current) {
+      hiddenFileInputRef.current.value = "";
+      hiddenFileInputRef.current.click();
+    }
+  };
+
+  const onDeviceFileSelected = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    try {
+      const loadedDoc = await readDocumentFileFromDevice(file);
+      loadSavedDoc(loadedDoc);
+      showToast(`Loaded "${loadedDoc.name}" from your device!`, "success");
+    } catch (err: any) {
+      console.error("Failed to open file from device:", err);
+      showToast(err?.message || "Could not read document file", "error");
     }
   };
 
@@ -859,22 +811,20 @@ export default function QuotationBuilder() {
   const deleteSavedDoc = async (id: string, e?: React.MouseEvent) => {
     if (e) e.stopPropagation();
     
-    const targetCollection = "zainee_documents";
     const entityLabel = "Zainee Enterprise";
-
-    const confirmMsg = `Delete this document from ${entityLabel}?`;
+    const confirmMsg = `Delete this document from ${entityLabel} on your device?`;
 
     if (window.confirm(confirmMsg)) {
       try {
-        await deleteDoc(doc(db, targetCollection, id));
+        deleteDocumentLocally(id);
         
         if (currentDocId === id) {
           resetSheetFields("zainee");
         }
-        showToast(`${entityLabel} document deleted.`, "info");
+        showToast(`${entityLabel} document deleted from device.`, "info");
       } catch (e) {
         console.error(`Error deleting ${entityLabel} document:`, e);
-        handleFirestoreError(e, OperationType.DELETE, `${targetCollection}/${id}`);
+        showToast("Failed to delete document from device", "error");
       }
     }
   };
@@ -883,22 +833,16 @@ export default function QuotationBuilder() {
     e.stopPropagation();
     const documentObj = savedDocs.find(d => d.id === id);
     if (!documentObj) return;
-    const targetCollection = "zainee_documents";
     const entityLabel = "Zainee Enterprise";
 
-    const newName = window.prompt(`Rename this document in ${entityLabel}:`, documentObj.name);
+    const newName = window.prompt(`Rename this document on your device:`, documentObj.name);
     if (newName && newName.trim() !== "") {
       try {
-        const updatedData = {
-          ...documentObj,
-          name: newName.trim(),
-          updatedAt: new Date().toISOString()
-        };
-        await setDoc(doc(db, targetCollection, id), updatedData);
-        showToast(`Document renamed in ${entityLabel}`);
+        renameDocumentLocally(id, newName.trim());
+        showToast(`Document renamed on your device`);
       } catch (e) {
         console.error("Error renaming document:", e);
-        handleFirestoreError(e, OperationType.WRITE, `${targetCollection}/${id}`);
+        showToast("Failed to rename document", "error");
       }
     }
   };
@@ -913,66 +857,36 @@ export default function QuotationBuilder() {
   };
 
   const duplicateCurrentDoc = async () => {
-    const targetCollection = "zainee_documents";
     const entityName = "Zainee Enterprise";
     const defaultName = `Copy of ${messers ? messers.trim() : "Quotation"} (${dateVal})`;
-    const docName = window.prompt(`Enter a name for the duplicated copy in ${entityName}:`, defaultName);
+    const docName = window.prompt(`Enter a name for the duplicated copy on your device:`, defaultName);
     if (!docName || docName.trim() === "") return;
 
     setSaveStatus("saving");
     const newId = generateUUID("zainee");
     try {
       const docPayload: SavedDocument = {
+        ...constructCurrentDocData().docData,
         id: newId,
-        companyId: "zainee",
-        companyName: "Zainee Enterprise",
         name: docName.trim(),
-        docType,
-        dateVal,
-        messers,
-        address,
-        vesselName: vesselName || "",
-        portBerth: portBerth || "",
-        includeVesselName: Boolean(includeVesselName),
-        includePortBerth: Boolean(includePortBerth),
-        currency: currency || "",
-        discountPercent: discountType === "percentage" ? (parseFloat(discountValue) || 0) : 0,
-        includeDiscount: Boolean(includeDiscount),
-        discountType,
-        discountValue: parseFloat(discountValue) || 0,
-        challanNo: challanNo || "",
-        requisitionNo: requisitionNo || "",
-        invoiceNo: invoiceNo || "",
-        poNumber: poNumber || "",
-        quotationNo: quotationNo || "",
-        includeInvoiceNo: Boolean(includeInvoiceNo),
-        includeChallanNo: Boolean(includeChallanNo),
-        includeQuotationNo: Boolean(includeQuotationNo),
-        includeRequisitionNo: Boolean(includeRequisitionNo),
-        includePoNumber: Boolean(includePoNumber),
-        rows: rows.map(r => ({ ...r })),
-        mergedRegions: mergedRegions.map(m => ({ ...m })),
-        cellFormats: { ...cellFormats },
-        vatPercent: parseFloat(vatPercent) || 0,
-        transportationFee: parseFloat(transportationFee) || 0,
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString()
       };
 
-      await setDoc(doc(db, targetCollection, newId), docPayload);
+      saveDocumentLocally(docPayload);
       setCurrentDocId(newId);
       setSaveStatus("saved");
       setTimeout(() => setSaveStatus("idle"), 3000);
-      showToast(`Duplicated into ${entityName} database`, "success");
-    } catch (err) {
+      showToast(`Duplicated into local device storage`, "success");
+    } catch (err: any) {
       console.error("Error duplicating document:", err);
       setSaveStatus("error");
       setTimeout(() => setSaveStatus("idle"), 3000);
-      handleFirestoreError(err, OperationType.WRITE, `${targetCollection}/${newId}`);
+      showToast(err?.message || "Failed to duplicate document", "error");
     }
   };
 
-  // Debounced Auto-Save
+  // Debounced Auto-Save to local storage
   useEffect(() => {
     if (!autoSaveEnabled) return;
 
@@ -988,80 +902,11 @@ export default function QuotationBuilder() {
     if (!hasAnyContent) return;
 
     const timer = setTimeout(async () => {
-      // Auto-save to zainee_documents
-      const targetCollection = "zainee_documents";
-      
-      const isValidIdForCompany = currentDocId && currentDocId.startsWith("ze-");
-      const docId = isValidIdForCompany ? currentDocId : generateUUID("zainee");
-      const now = new Date().toISOString();
-      let docIdentifier = "";
-      if (docType === "challan" && challanNo) {
-        docIdentifier = ` (Challan #${challanNo})`;
-      } else if (docType === "invoice" && invoiceNo) {
-        docIdentifier = ` (Invoice #${invoiceNo})`;
-      }
-
-      const docTypeLabel = docType === "invoice" ? "Invoice" : docType === "challan" ? "Challan" : "Quotation";
-      const defaultName = `${docTypeLabel}${docIdentifier} - ${messers || "Unnamed Client"} (${dateVal})`;
-      const nameToUse = savedDocs.find(d => d.id === currentDocId)?.name || defaultName;
-
-      const sanitizedRows = rows.map(r => ({
-        sl: Number(r.sl) || 0,
-        desc: String(r.desc ?? ""),
-        qty: String(r.qty ?? ""),
-        unit: String(r.unit ?? ""),
-        price: String(r.price ?? ""),
-        amount: Number(r.amount) || 0
-      }));
-
-      const sanitizedMergedRegions = mergedRegions.map(m => ({
-        id: String(m.id),
-        startRow: Number(m.startRow) || 0,
-        endRow: Number(m.endRow) || 0,
-        startCol: Number(m.startCol) ?? 0,
-        endCol: Number(m.endCol) ?? 0
-      }));
-
-      const docData: SavedDocument = {
-        id: docId,
-        companyId: "zainee",
-        companyName: "Zainee Enterprise",
-        name: String(nameToUse || "Unnamed Document"),
-        createdAt: String(savedDocs.find(d => d.id === docId)?.createdAt || now),
-        updatedAt: String(now),
-        docType: docType as "quotation" | "challan" | "invoice",
-        dateVal: String(dateVal || ""),
-        messers: String(messers || ""),
-        address: String(address || ""),
-        vesselName: String(vesselName || ""),
-        portBerth: String(portBerth || ""),
-        includeVesselName: Boolean(includeVesselName),
-        includePortBerth: Boolean(includePortBerth),
-        currency: String(currency || ""),
-        discountPercent: discountType === "percentage" ? (parseFloat(discountValue) || 0) : 0,
-        includeDiscount: Boolean(includeDiscount),
-        discountType,
-        discountValue: parseFloat(discountValue) || 0,
-        challanNo: String(challanNo || ""),
-        requisitionNo: String(requisitionNo || ""),
-        invoiceNo: String(invoiceNo || ""),
-        poNumber: String(poNumber || ""),
-        quotationNo: String(quotationNo || ""),
-        includeInvoiceNo: Boolean(includeInvoiceNo),
-        includeChallanNo: Boolean(includeChallanNo),
-        includeQuotationNo: Boolean(includeQuotationNo),
-        includeRequisitionNo: Boolean(includeRequisitionNo),
-        includePoNumber: Boolean(includePoNumber),
-        rows: sanitizedRows,
-        mergedRegions: sanitizedMergedRegions,
-        cellFormats: { ...cellFormats },
-        vatPercent: parseFloat(vatPercent) || 0,
-        transportationFee: parseFloat(transportationFee) || 0
-      };
+      const { docData, docId } = constructCurrentDocData();
 
       setSaveStatus("saving");
       try {
-        await setDoc(doc(db, targetCollection, docId), docData);
+        saveDocumentLocally(docData);
         if (currentDocId !== docId) {
           setCurrentDocId(docId);
         }
@@ -1073,7 +918,6 @@ export default function QuotationBuilder() {
         console.error("Auto-save failed:", e);
         setSaveStatus("error");
         setTimeout(() => setSaveStatus("idle"), 3000);
-        handleFirestoreError(e, OperationType.WRITE, `${targetCollection}/${docId}`);
       }
     }, 1500);
 
@@ -2870,6 +2714,8 @@ export default function QuotationBuilder() {
             saveStatus={saveStatus}
             lastSavedTime={lastSavedTime}
             onSaveDoc={() => saveCurrentDocToApp()}
+            onSaveFileToDevice={() => saveDocToFileOnDevice()}
+            onOpenFileFromDevice={triggerOpenDocFile}
             onPrint={handlePrint}
             onDownloadPDF={handleDownloadPDF}
             isGeneratingPDF={isGeneratingPDF}
@@ -2957,6 +2803,8 @@ export default function QuotationBuilder() {
               onDuplicateDoc={currentDocId ? duplicateCurrentDoc : undefined}
               onDeleteDoc={currentDocId ? () => deleteSavedDoc(currentDocId) : undefined}
               onSaveDoc={() => saveCurrentDocToApp()}
+              onSaveFileToDevice={() => saveDocToFileOnDevice()}
+              onOpenFileFromDevice={triggerOpenDocFile}
               saveStatus={saveStatus}
               onOpenExcelModal={() => setIsExcelModalOpen(true)}
               onPrint={handlePrint}
@@ -4041,6 +3889,9 @@ export default function QuotationBuilder() {
                 }}
                 deleteSavedDoc={deleteSavedDoc}
                 renameSavedDoc={renameSavedDoc}
+                onSaveFileToDevice={(doc) => saveDocToFileOnDevice(doc)}
+                onOpenFileFromDevice={triggerOpenDocFile}
+                onBackupAllToDevice={() => exportAllDocumentsBackupToDevice(savedDocs)}
                 isPageMode={true}
                 onSwitchPage={(page) => setActiveView(page === "saved-docs" ? "saved-docs" : "editor")}
               />
@@ -4206,12 +4057,22 @@ export default function QuotationBuilder() {
       {/* Floating Status Toast */}
       {toastMessage && (
         <div className="fixed bottom-20 right-6 z-[999999] bg-slate-900/95 backdrop-blur-xs text-white text-xs font-bold px-4 py-2.5 rounded-xl shadow-2xl border border-slate-700/80 flex items-center gap-2 animate-in fade-in slide-in-from-bottom-4 duration-250">
-          <div className="bg-emerald-500 text-white rounded-full p-1">
-            <CheckCheck className="h-3.5 w-3.5" />
+          <div className={`${toastMessage.type === "error" ? "bg-rose-500" : "bg-emerald-500"} text-white rounded-full p-1`}>
+            {toastMessage.type === "error" ? <X className="h-3.5 w-3.5" /> : <CheckCheck className="h-3.5 w-3.5" />}
           </div>
           <span>{toastMessage.text}</span>
         </div>
       )}
+
+      {/* Hidden File Input for Device Document File Loading (.zainee, .json) */}
+      <input
+        type="file"
+        ref={hiddenFileInputRef}
+        onChange={onDeviceFileSelected}
+        accept=".zainee,.json"
+        className="hidden"
+        aria-hidden="true"
+      />
     </div>
   );
 }

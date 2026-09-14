@@ -12,11 +12,15 @@ import {
   ArrowUpRight,
   Ship,
   Building2,
-  FileSpreadsheet
+  FileSpreadsheet,
+  HardDriveDownload,
+  Download,
+  Upload
 } from "lucide-react";
 import { SavedDocument, CompanyId } from "../types";
 import { COMPANY_PROFILES } from "../utils/companyProfiles";
 import { generateExcelDocument } from "../utils/excelGenerator";
+import { downloadDocumentToDevice, exportAllDocumentsBackupToDevice } from "../lib/localDocumentStorage";
 
 export interface SavedDocumentsPanelProps {
   savedDocs: SavedDocument[];
@@ -28,6 +32,9 @@ export interface SavedDocumentsPanelProps {
   loadSavedDoc: (doc: SavedDocument) => void;
   deleteSavedDoc: (id: string, e?: React.MouseEvent) => void;
   renameSavedDoc: (id: string, e: React.MouseEvent) => void;
+  onSaveFileToDevice?: (doc: SavedDocument) => void;
+  onOpenFileFromDevice?: () => void;
+  onBackupAllToDevice?: () => void;
   // Multi-page navigation
   isPageMode?: boolean;
   onSwitchPage?: (page: "editor" | "saved-docs") => void;
@@ -77,6 +84,9 @@ export default function SavedDocumentsPanel({
   loadSavedDoc,
   deleteSavedDoc,
   renameSavedDoc,
+  onSaveFileToDevice,
+  onOpenFileFromDevice,
+  onBackupAllToDevice,
   isPageMode = false,
   onSwitchPage,
   activeCompany,
@@ -172,8 +182,34 @@ export default function SavedDocumentsPanel({
           </div>
         </div>
 
-        {/* Minimal Actions & Page Navigation Controls */}
+        {/* Actions & Page Navigation Controls */}
         <div className="flex items-center gap-1.5 text-xs">
+          {onOpenFileFromDevice && (
+            <button
+              type="button"
+              id="btn-panel-open-device-file"
+              onClick={onOpenFileFromDevice}
+              className="inline-flex items-center gap-1 bg-white hover:bg-slate-50 text-slate-700 font-medium text-[11px] px-2.5 py-1 rounded border border-slate-300 transition-colors cursor-pointer shadow-2xs"
+              title="Open document file (.zainee or .json) from your device"
+            >
+              <Upload className="h-3 w-3 text-blue-600" />
+              <span>Open File</span>
+            </button>
+          )}
+
+          {savedDocs.length > 0 && (
+            <button
+              type="button"
+              id="btn-panel-backup-all"
+              onClick={() => onBackupAllToDevice ? onBackupAllToDevice() : exportAllDocumentsBackupToDevice(savedDocs)}
+              className="inline-flex items-center gap-1 bg-slate-100 hover:bg-slate-200 text-slate-700 font-medium text-[11px] px-2.5 py-1 rounded transition-colors cursor-pointer"
+              title="Save backup of all documents to your device"
+            >
+              <Download className="h-3 w-3 text-slate-600" />
+              <span className="hidden sm:inline">Backup All</span>
+            </button>
+          )}
+
           {onSwitchPage && (
             <button
               type="button"
@@ -255,9 +291,12 @@ export default function SavedDocumentsPanel({
           <div className="flex items-center gap-1.5">
             <span className="inline-block h-1.5 w-1.5 rounded-full bg-emerald-500" />
             <span className="font-semibold text-slate-700">Workspace Records:</span>
-            <span>Zainee Enterprise Archive Vault</span>
+            <span>Zainee Enterprise Local Archive</span>
           </div>
-          <span className="font-mono text-[9px] text-slate-400 font-medium">Cloud Synced</span>
+          <span className="font-mono text-[9px] text-emerald-700 font-semibold flex items-center gap-1 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">
+            <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
+            Local Device Storage
+          </span>
         </div>
       </div>
 
@@ -361,13 +400,13 @@ export default function SavedDocumentsPanel({
                             </span>
                           </div>
 
-                          {/* Subtle client/date metadata and Firebase ID in Name column */}
+                          {/* Subtle client/date metadata and Document ID in Name column */}
                           <div className="flex items-center gap-2 text-[10.5px] text-slate-500 truncate max-w-[280px] sm:max-w-[380px]">
                             {(doc.messers || doc.vesselName || doc.dateVal) && (
                               <span>{[doc.messers, doc.vesselName, doc.dateVal].filter(Boolean).join(" • ")}</span>
                             )}
                             <span className="text-slate-300">•</span>
-                            <span className="font-mono text-[9px] text-slate-400 font-medium" title={`Firebase ID: ${doc.id}`}>
+                            <span className="font-mono text-[9px] text-slate-400 font-medium" title={`Local ID: ${doc.id}`}>
                               {doc.id}
                             </span>
                           </div>
@@ -394,6 +433,18 @@ export default function SavedDocumentsPanel({
                         >
                           <FileEdit className="h-3 w-3" />
                           <span>Open</span>
+                        </button>
+
+                        {/* Save File to Device (.zainee) */}
+                        <button
+                          type="button"
+                          id={`btn-save-device-file-${doc.id}`}
+                          onClick={() => onSaveFileToDevice ? onSaveFileToDevice(doc) : downloadDocumentToDevice(doc)}
+                          className="inline-flex items-center gap-1 text-[11px] font-medium text-slate-700 hover:text-blue-700 hover:bg-blue-50 border border-slate-200 px-2 py-1 rounded transition-colors cursor-pointer"
+                          title="Save this document as a file (.zainee) locally on your device"
+                        >
+                          <HardDriveDownload className="h-3 w-3 text-blue-600" />
+                          <span>Save File</span>
                         </button>
 
                         {/* Export to Excel */}

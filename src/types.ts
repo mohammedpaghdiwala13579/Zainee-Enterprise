@@ -53,7 +53,6 @@ export interface CompanyProfile {
   stampUrl?: string;
   watermarkUrl?: string;
   signatureForLabel: string;
-  firebaseCollection: string;
   idPrefix: string;
 }
 

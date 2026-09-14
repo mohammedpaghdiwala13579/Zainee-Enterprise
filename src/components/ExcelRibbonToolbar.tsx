@@ -6,7 +6,9 @@ import {
   Palette,
   X,
   Undo2,
-  Redo2
+  Redo2,
+  Upload,
+  HardDriveDownload
 } from "lucide-react";
 import { CellFormat, CellBorders } from "../types";
 import { applyInlineFormatting } from "../utils/textFormatter";
@@ -98,6 +100,8 @@ export interface ExcelRibbonToolbarProps {
   onDuplicateDoc?: () => void;
   onDeleteDoc?: () => void;
   onSaveDoc: () => void;
+  onSaveFileToDevice?: () => void;
+  onOpenFileFromDevice?: () => void;
   saveStatus: "idle" | "saving" | "saved" | "error";
 
   // Actions
@@ -141,6 +145,8 @@ export default function ExcelRibbonToolbar({
   onDuplicateDoc,
   onDeleteDoc,
   onSaveDoc,
+  onSaveFileToDevice,
+  onOpenFileFromDevice,
   saveStatus,
   onOpenExcelModal,
   onPrint,
@@ -333,6 +339,34 @@ export default function ExcelRibbonToolbar({
 
         {/* Right: Document Actions */}
         <div className="flex flex-wrap items-center gap-1.5">
+          {/* Open Document File from Device */}
+          {onOpenFileFromDevice && (
+            <button
+              type="button"
+              id="btn-toolbar-open-file"
+              onClick={onOpenFileFromDevice}
+              className="h-7 px-2 bg-white hover:bg-slate-50 text-slate-700 hover:text-slate-900 rounded-md border border-slate-300 shadow-2xs transition-colors cursor-pointer flex items-center gap-1 text-xs font-semibold"
+              title="Open document file (.zainee or .json) from your device"
+            >
+              <Upload className="h-3 w-3 text-blue-600" />
+              <span className="hidden sm:inline">Open</span>
+            </button>
+          )}
+
+          {/* Save File to Device */}
+          {onSaveFileToDevice && (
+            <button
+              type="button"
+              id="btn-toolbar-save-file"
+              onClick={onSaveFileToDevice}
+              className="h-7 px-2.5 bg-blue-50 hover:bg-blue-100 text-blue-800 hover:text-blue-900 rounded-md border border-blue-300 shadow-2xs transition-colors cursor-pointer flex items-center gap-1 text-xs font-semibold"
+              title="Save document directly to your device storage (.zainee)"
+            >
+              <HardDriveDownload className="h-3 w-3 text-blue-700" />
+              <span className="hidden sm:inline">Save File</span>
+            </button>
+          )}
+
           {/* New Sheet */}
           <button
             type="button"

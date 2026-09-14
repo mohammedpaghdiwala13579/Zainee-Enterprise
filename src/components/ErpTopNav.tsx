@@ -5,7 +5,9 @@ import {
   Printer, 
   FolderKanban,
   Laptop,
-  FileSpreadsheet
+  FileSpreadsheet,
+  HardDriveDownload,
+  Upload
 } from "lucide-react";
 import { CompanyId } from "../types";
 
@@ -17,6 +19,8 @@ export interface ErpTopNavProps {
   saveStatus?: "idle" | "saving" | "saved" | "error";
   lastSavedTime?: string | null;
   onSaveDoc: () => void;
+  onSaveFileToDevice?: () => void;
+  onOpenFileFromDevice?: () => void;
   onPrint: () => void;
   onDownloadPDF?: () => void;
   isGeneratingPDF?: boolean;
@@ -40,6 +44,8 @@ export default function ErpTopNav({
   saveStatus,
   lastSavedTime,
   onSaveDoc,
+  onSaveFileToDevice,
+  onOpenFileFromDevice,
   onPrint,
   onDownloadPDF,
   isGeneratingPDF = false,
@@ -117,17 +123,45 @@ export default function ErpTopNav({
               <span className="hidden sm:inline">Print</span>
             </button>
 
-            {/* Save to Cloud Button */}
+            {/* Open Document File from Device */}
+            {onOpenFileFromDevice && (
+              <button
+                type="button"
+                id="topnav-btn-open-file"
+                onClick={onOpenFileFromDevice}
+                className="h-8 px-2.5 bg-white hover:bg-slate-50 text-slate-700 hover:text-slate-900 border border-slate-300 rounded-md text-xs font-semibold flex items-center gap-1.5 shadow-2xs transition-colors cursor-pointer"
+                title="Open document file (.zainee or .json) from your device"
+              >
+                <Upload className="h-3.5 w-3.5 text-blue-600" />
+                <span className="hidden sm:inline">Open</span>
+              </button>
+            )}
+
+            {/* Save File to Device (.zainee) */}
+            {onSaveFileToDevice && (
+              <button
+                type="button"
+                id="topnav-btn-save-file"
+                onClick={onSaveFileToDevice}
+                className="h-8 px-2.5 bg-blue-50 hover:bg-blue-100 text-blue-800 hover:text-blue-900 border border-blue-300 rounded-md text-xs font-semibold flex items-center gap-1.5 shadow-2xs transition-colors cursor-pointer"
+                title="Save file directly onto your device hard drive (.zainee)"
+              >
+                <HardDriveDownload className="h-3.5 w-3.5 text-blue-700" />
+                <span>Save File</span>
+              </button>
+            )}
+
+            {/* Save to Local App Storage Button */}
             <button
               type="button"
               id="topnav-btn-save"
               onClick={onSaveDoc}
               disabled={saveStatus === "saving"}
               className="h-8 px-3 bg-blue-600 hover:bg-blue-700 text-white rounded-md text-xs font-semibold flex items-center gap-1.5 shadow-2xs transition-colors cursor-pointer disabled:opacity-60"
-              title="Save Document Record"
+              title="Save document locally into app storage (Ctrl+S)"
             >
               <Save className="h-3.5 w-3.5" />
-              <span>Save</span>
+              <span>{saveStatus === "saving" ? "Saving..." : "Save"}</span>
             </button>
           </div>
         )}
