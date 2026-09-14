@@ -35,6 +35,7 @@ export interface SavedDocumentsPanelProps {
   onSaveFileToDevice?: (doc: SavedDocument) => void;
   onOpenFileFromDevice?: () => void;
   onBackupAllToDevice?: () => void;
+  onOpenGoogleSheetsModal?: (doc?: SavedDocument) => void;
   // Multi-page navigation
   isPageMode?: boolean;
   onSwitchPage?: (page: "editor" | "saved-docs") => void;
@@ -87,6 +88,7 @@ export default function SavedDocumentsPanel({
   onSaveFileToDevice,
   onOpenFileFromDevice,
   onBackupAllToDevice,
+  onOpenGoogleSheetsModal,
   isPageMode = false,
   onSwitchPage,
   activeCompany,
@@ -194,6 +196,19 @@ export default function SavedDocumentsPanel({
             >
               <Upload className="h-3 w-3 text-blue-600" />
               <span>Open File</span>
+            </button>
+          )}
+
+          {onOpenGoogleSheetsModal && (
+            <button
+              type="button"
+              id="btn-panel-google-sheets"
+              onClick={() => onOpenGoogleSheetsModal()}
+              className="inline-flex items-center gap-1 bg-emerald-50 hover:bg-emerald-100 text-emerald-800 font-medium text-[11px] px-2.5 py-1 rounded border border-emerald-300 transition-colors cursor-pointer shadow-2xs"
+              title="Connect and manage Google Sheets"
+            >
+              <FileSpreadsheet className="h-3 w-3 text-emerald-700" />
+              <span>Google Sheets</span>
             </button>
           )}
 
@@ -459,6 +474,20 @@ export default function SavedDocumentsPanel({
                           <FileSpreadsheet className="h-3 w-3 text-emerald-600" />
                           <span>{exportingDocId === doc.id ? "Exporting..." : "Excel"}</span>
                         </button>
+
+                        {/* Save to Google Sheets */}
+                        {onOpenGoogleSheetsModal && (
+                          <button
+                            type="button"
+                            id={`btn-export-gsheet-${doc.id}`}
+                            onClick={() => onOpenGoogleSheetsModal(doc)}
+                            className="inline-flex items-center gap-1 text-[11px] font-medium text-emerald-700 hover:text-emerald-900 hover:bg-emerald-50 px-2 py-1 rounded transition-colors cursor-pointer"
+                            title="Save directly to Google Sheets"
+                          >
+                            <FileSpreadsheet className="h-3 w-3 text-emerald-600" />
+                            <span>Sheets</span>
+                          </button>
+                        )}
 
                         {/* Rename */}
                         <button

@@ -25,6 +25,9 @@ import { generateExcelDocument } from "../utils/excelGenerator";
 // Lazy-loaded secondary components for instant initial app startup
 const SavedDocumentsPanel = React.lazy(() => import("./SavedDocumentsPanel"));
 const ExcelPasteModal = React.lazy(() => import("./ExcelPasteModal"));
+const GoogleSheetsModal = React.lazy(() =>
+  import("./GoogleSheetsModal").then((m) => ({ default: m.GoogleSheetsModal }))
+);
 
 // Translate OKLCH colors to standard sRGB for canvas compatibility (used for html2pdf rendering)
 function oklchToRgb(l: number, c: number, h: number): [number, number, number] {
@@ -322,6 +325,8 @@ export default function QuotationBuilder() {
 
   // Excel Paste Modal and Batch Row Adder states
   const [isExcelModalOpen, setIsExcelModalOpen] = useState(false);
+  const [isGoogleSheetsModalOpen, setIsGoogleSheetsModalOpen] = useState(false);
+  const [targetGoogleSheetDoc, setTargetGoogleSheetDoc] = useState<SavedDocument | null>(null);
   const [customRowCountInput, setCustomRowCountInput] = useState<string>("10");
   const [customSubtractCountInput, setCustomSubtractCountInput] = useState<string>("10");
   const [targetTotalRowCountInput, setTargetTotalRowCountInput] = useState<string>("");
@@ -332,6 +337,42 @@ export default function QuotationBuilder() {
     setTimeout(() => {
       setToastMessage(null);
     }, 3500);
+  };
+
+  const openGoogleSheetsForDoc = (doc?: SavedDocument) => {
+    if (doc) {
+      setTargetGoogleSheetDoc(doc);
+    } else {
+      const activeSnapshot: SavedDocument = {
+        id: currentDocId || "active-doc-" + Date.now(),
+        companyId: "zainee",
+        companyName: "Zainee Enterprise",
+        name: currentDocName || `${docType.toUpperCase()} - ${dateVal || "Draft"}`,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+        docType,
+        dateVal,
+        messers,
+        address,
+        vesselName,
+        portBerth,
+        includeVesselName,
+        includePortBerth,
+        currency,
+        discountPercent,
+        includeDiscount,
+        discountType,
+        notes,
+        paymentTerms,
+        selectedSignatory,
+        customSignatoryTitle,
+        rows,
+        mergedCells: mergedRegions,
+        cellFormats,
+      };
+      setTargetGoogleSheetDoc(activeSnapshot);
+    }
+    setIsGoogleSheetsModalOpen(true);
   };
 
   // Grid rows: starts with saved draft rows or 35 blank rows by default
@@ -2722,6 +2763,7 @@ export default function QuotationBuilder() {
             onDownloadExcel={handleDownloadExcel}
             isGeneratingExcel={isGeneratingExcel}
             onOpenExcelModal={() => setIsExcelModalOpen(true)}
+            onOpenGoogleSheetsModal={() => openGoogleSheetsForDoc()}
             onToggleMobileSidebar={() => setIsMobileSidebarOpen(!isMobileSidebarOpen)}
             onNavigateToArchive={() => setActiveView(activeView === "saved-docs" ? "editor" : "saved-docs")}
             savedDocsCount={savedDocs.length}
@@ -2807,6 +2849,7 @@ export default function QuotationBuilder() {
               onOpenFileFromDevice={triggerOpenDocFile}
               saveStatus={saveStatus}
               onOpenExcelModal={() => setIsExcelModalOpen(true)}
+              onOpenGoogleSheetsModal={() => openGoogleSheetsForDoc()}
               onPrint={handlePrint}
               onDownloadPDF={handleDownloadPDF}
               isGeneratingPDF={isGeneratingPDF}
@@ -3892,6 +3935,7 @@ export default function QuotationBuilder() {
                 onSaveFileToDevice={(doc) => saveDocToFileOnDevice(doc)}
                 onOpenFileFromDevice={triggerOpenDocFile}
                 onBackupAllToDevice={() => exportAllDocumentsBackupToDevice(savedDocs)}
+                onOpenGoogleSheetsModal={(doc) => openGoogleSheetsForDoc(doc)}
                 isPageMode={true}
                 onSwitchPage={(page) => setActiveView(page === "saved-docs" ? "saved-docs" : "editor")}
               />
@@ -4047,6 +4091,48 @@ export default function QuotationBuilder() {
             selectedRowIndex={safeSelectedRowIndex}
             totalCurrentRows={rows.length}
             docType={docType}
+          />
+        </React.Suspense>
+      )}
+
+      {/* Google Sheets Integration Modal */}
+      {isGoogleSheetsModalOpen && (
+        <React.Suspense fallback={null}>
+          <GoogleSheetsModal
+            isOpen={isGoogleSheetsModalOpen}
+            onClose={() => setIsGoogleSheetsModalOpen(false)}
+            currentDocument={
+              targetGoogleSheetDoc || {
+                id: currentDocId || "active-doc-" + Date.now(),
+                companyId: "zainee",
+                companyName: "Zainee Enterprise",
+                name: currentDocName || `${docType.toUpperCase()} - ${dateVal || "Draft"}`,
+                createdAt: new Date().toISOString(),
+                updatedAt: new Date().toISOString(),
+                docType,
+                dateVal,
+                messers,
+                address,
+                vesselName,
+                portBerth,
+                includeVesselName,
+                includePortBerth,
+                currency,
+                discountPercent,
+                includeDiscount,
+                discountType,
+                notes,
+                paymentTerms,
+                selectedSignatory,
+                customSignatoryTitle,
+                rows,
+                mergedCells: mergedRegions,
+                cellFormats,
+              }
+            }
+            onSavedSuccess={(res) => {
+              showToast(`Saved to Google Sheets: ${res.title}`, "success");
+            }}
           />
         </React.Suspense>
       )}

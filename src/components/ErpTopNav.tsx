@@ -27,6 +27,7 @@ export interface ErpTopNavProps {
   onDownloadExcel?: () => void;
   isGeneratingExcel?: boolean;
   onOpenExcelModal?: () => void;
+  onOpenGoogleSheetsModal?: () => void;
   onToggleMobileSidebar: () => void;
   isInstallable?: boolean;
   onInstallClick?: () => void;
@@ -52,6 +53,7 @@ export default function ErpTopNav({
   onDownloadExcel,
   isGeneratingExcel = false,
   onOpenExcelModal,
+  onOpenGoogleSheetsModal,
   onToggleMobileSidebar,
   isInstallable,
   onInstallClick,
@@ -108,6 +110,20 @@ export default function ErpTopNav({
               >
                 <FileSpreadsheet className="h-3.5 w-3.5 text-emerald-700" />
                 <span>{isGeneratingExcel ? "Exporting..." : "Excel"}</span>
+              </button>
+            )}
+
+            {/* Google Sheets Integration */}
+            {onOpenGoogleSheetsModal && (
+              <button
+                type="button"
+                id="topnav-btn-google-sheets"
+                onClick={onOpenGoogleSheetsModal}
+                className="h-8 px-2.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-md text-xs font-semibold flex items-center gap-1.5 shadow-2xs transition-colors cursor-pointer"
+                title="Connect & Save files directly to your Google Sheets & Drive"
+              >
+                <FileSpreadsheet className="h-3.5 w-3.5" />
+                <span className="hidden sm:inline">Google Sheets</span>
               </button>
             )}
 
