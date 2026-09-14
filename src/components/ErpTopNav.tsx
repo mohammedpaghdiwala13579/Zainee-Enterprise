@@ -3,7 +3,6 @@ import {
   Menu, 
   Save, 
   Printer, 
-  Download, 
   FolderKanban,
   Laptop,
   FileSpreadsheet
@@ -103,21 +102,6 @@ export default function ErpTopNav({
               >
                 <FileSpreadsheet className="h-3.5 w-3.5 text-emerald-700" />
                 <span>{isGeneratingExcel ? "Exporting..." : "Excel"}</span>
-              </button>
-            )}
-
-            {/* Direct PDF Download */}
-            {onDownloadPDF && (
-              <button
-                type="button"
-                id="topnav-btn-pdf"
-                onClick={onDownloadPDF}
-                disabled={isGeneratingPDF}
-                className="h-8 px-2.5 bg-rose-50 hover:bg-rose-100 text-rose-800 hover:text-rose-900 border border-rose-200 rounded-md text-xs font-semibold flex items-center gap-1.5 shadow-2xs transition-colors cursor-pointer disabled:opacity-50"
-                title="Download PDF Document"
-              >
-                <Download className="h-3.5 w-3.5 text-rose-600" />
-                <span className="hidden sm:inline">{isGeneratingPDF ? "Generating..." : "PDF"}</span>
               </button>
             )}
 
